@@ -1,13 +1,12 @@
-﻿using TaskManagementApi.Models;
-
+﻿using TaskManagementApi.DTOs;
 namespace TaskManagementApi.Services
 {
     public interface ITaskService
     {
-        Task<TaskItem> CreateTaskAsync(TaskItem taskItem);
-        Task<IEnumerable<TaskItem>> GetAllTasksAsync();
-        Task<TaskItem?> GetTaskAsync(int id);
-        Task<bool> UpdateTaskAsync(int id, TaskItem taskItem);
+        Task<TaskResponseDto> CreateTaskAsync(CreateTaskDto createTaskDto);
+        Task<IEnumerable<TaskResponseDto>> GetAllTasksAsync();
+        Task<TaskResponseDto?> GetTaskAsync(int id);
+        Task<bool> UpdateTaskAsync(int id, UpdateTaskDto updateTaskDto);
         Task<bool> DeleteTaskAsync(int id);
     }
 }

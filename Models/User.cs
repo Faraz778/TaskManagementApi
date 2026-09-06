@@ -1,7 +1,10 @@
-﻿namespace TaskManagementApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TaskManagementApi.Models
 {
     public class User
     {
+        [Key]
         public int UserId { get; set; }
 
         public string UserName { get; set; }

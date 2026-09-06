@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagementApi.Services;
-using TaskManagementApi.Models;
+//using TaskManagementApi.Models;
+using TaskManagementApi.DTOs;
 
 namespace TaskManagementApi.Controllers
 {
@@ -16,9 +17,9 @@ namespace TaskManagementApi.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTask(TaskItem taskItem) {
+        public async Task<IActionResult> CreateTask(CreateTaskDto createTaskDto) {
 
-            var task = await _taskService.CreateTaskAsync(taskItem);
+            var task = await _taskService.CreateTaskAsync(createTaskDto);
             return Created("", task);
 
         }
@@ -42,9 +43,9 @@ namespace TaskManagementApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(int id, TaskItem taskItem)
+        public async Task<IActionResult> UpdateTask(int id, UpdateTaskDto updateTaskDto)
         {
-            var result = await _taskService.UpdateTaskAsync(id, taskItem);
+            var result = await _taskService.UpdateTaskAsync(id, updateTaskDto);
             if(result == false)
             {
                 return NotFound();

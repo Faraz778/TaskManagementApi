@@ -1,6 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using TaskManagementApi.Data;
+using TaskManagementApi.Services;
 
 namespace TaskManagementApi
 {
@@ -17,8 +18,10 @@ namespace TaskManagementApi
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(
-           builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
+            builder.Configuration.GetConnectionString("DefaultConnection")
+            ));
+            builder.Services.AddScoped<ITaskService, TaskService>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             var app = builder.Build();
 
