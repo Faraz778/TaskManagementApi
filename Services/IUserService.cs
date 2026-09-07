@@ -11,6 +11,5 @@ namespace TaskManagementApi.Services
         Task<bool> UpdateUserAsync(int id, UpdateUserDto updateUserDto);
         Task<bool> DeleteUserAsync(int id);
         Task<LoginResponseDto?> LoginUserAsync(LoginUserDto loginUserDto);
-        //Task<UserResponseDto?> LoginUserAsync(LoginUserDto loginUserDto);
     }
 }

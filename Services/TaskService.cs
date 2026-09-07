@@ -13,13 +13,13 @@ namespace TaskManagementApi.Services
             _appDbContext = appDbContext;
         }
 
-        public async Task<TaskResponseDto> CreateTaskAsync(CreateTaskDto createTaskDto, int userid)
+        public async Task<TaskResponseDto> CreateTaskAsync(CreateTaskDto createTaskDto, int userId)
         {
             var task = new TaskItem
             {
                 Title = createTaskDto.Title,
                 Description = createTaskDto.Description,
-                UserId = userid,
+                UserId = userId,
 
             };
             await _appDbContext.Tasks.AddAsync(task);
@@ -35,17 +35,32 @@ namespace TaskManagementApi.Services
             };
         }
 
-        public async Task<IEnumerable<TaskResponseDto>> GetAllTasksAsync(int userId)
+
+        public async Task<IEnumerable<TaskResponseDto>> GetAllTasksAsync(int userId,bool? completed,int page,int pageSize)
         {
-            var result = await _appDbContext.Tasks.Where(t => t.UserId == userId).Select(t => new TaskResponseDto
+            var query = _appDbContext.Tasks
+                .Where(t => t.UserId == userId);
+
+            if (completed.HasValue)
             {
-                TaskId = t.TaskId,
-                Title = t.Title,
-                Description = t.Description,
-                IsCompleted = t.IsCompleted,
-                CreatedAt = t.CreatedAt,
-                UserId = t.UserId
-            }).ToListAsync();
+                query = query.Where(t => t.IsCompleted == completed.Value);
+            }
+
+            var result = await query
+                .OrderBy(t => t.TaskId)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(t => new TaskResponseDto
+                {
+                    TaskId = t.TaskId,
+                    Title = t.Title,
+                    Description = t.Description,
+                    IsCompleted = t.IsCompleted,
+                    CreatedAt = t.CreatedAt,
+                    UserId = t.UserId
+                })
+                .ToListAsync();
+
             return result;
         }
 
@@ -67,10 +82,10 @@ namespace TaskManagementApi.Services
             };
         }
 
-
-        public async Task<bool> UpdateTaskAsync(int id, UpdateTaskDto updateTaskDto)
+        public async Task<bool> UpdateTaskAsync(int id, UpdateTaskDto updateTaskDto, int userId)
         {
-            var existing = await _appDbContext.Tasks.FindAsync(id);
+            
+            var existing = await _appDbContext.Tasks.FirstOrDefaultAsync(t => t.TaskId == id && t.UserId == userId);
             if (existing == null)
             {
                 return false;
@@ -82,9 +97,9 @@ namespace TaskManagementApi.Services
             return true;
         }
 
-        public async Task<bool> DeleteTaskAsync(int id)
+        public async Task<bool> DeleteTaskAsync(int id, int userId)
         {
-            var existingTask = await _appDbContext.Tasks.FindAsync(id);
+            var existingTask = await _appDbContext.Tasks.FirstOrDefaultAsync(t => t.TaskId == id && t.UserId == userId);
             if (existingTask == null)
             {
                 return false;
@@ -93,10 +108,6 @@ namespace TaskManagementApi.Services
             await _appDbContext.SaveChangesAsync();
             return true;
         }
-
-
-
-
 
 
 

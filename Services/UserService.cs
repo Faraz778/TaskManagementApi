@@ -1,5 +1,4 @@
-﻿//using TaskManagementApi.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TaskManagementApi.Data;
 using TaskManagementApi.DTOs;
 using TaskManagementApi.Models;
@@ -72,6 +71,7 @@ namespace TaskManagementApi.Services
 
         public async Task<bool> UpdateUserAsync(int id, UpdateUserDto updateUserDto)
         {
+          
             var existingUser = await _context.Users.FindAsync(id);
             if (existingUser == null)
             {
@@ -79,7 +79,10 @@ namespace TaskManagementApi.Services
             }
             existingUser.UserName = updateUserDto.UserName;
             existingUser.UserEmail = updateUserDto.UserEmail;
-            existingUser.UserPassword = updateUserDto.UserPassword;
+
+            var passwordHasher  = new PasswordHasher<User>();
+            existingUser.UserPassword = passwordHasher.HashPassword(existingUser, updateUserDto.UserPassword);
+
 
             await _context.SaveChangesAsync();
             return true;

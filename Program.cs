@@ -14,10 +14,9 @@ namespace TaskManagementApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
 
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+            builder.Services.AddProblemDetails();
 
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(
@@ -27,10 +26,10 @@ namespace TaskManagementApi
             builder.Services.AddScoped<IUserService, UserService>();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
+            .AddJwtBearer(options =>
+         {
+            options.TokenValidationParameters = new TokenValidationParameters
+         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
@@ -44,10 +43,11 @@ namespace TaskManagementApi
             )
         };
     });
-            var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-         
+            var app = builder.Build();
+            app.UseExceptionHandler();
+
+
             app.UseHttpsRedirection();
 
             app.UseAuthentication();

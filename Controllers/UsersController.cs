@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿
 using Microsoft.AspNetCore.Mvc;
 using TaskManagementApi.Services;
 using TaskManagementApi.DTOs;
@@ -44,7 +44,7 @@ namespace TaskManagementApi.Controllers
         public async Task<IActionResult> UpdateUser(int id, UpdateUserDto updateUserDto)
         {
             var result = await _userService.UpdateUserAsync(id, updateUserDto);
-            if (result == false)
+            if (!result)
             {
                 return NotFound();
             }
@@ -55,12 +55,13 @@ namespace TaskManagementApi.Controllers
         public async Task<IActionResult> DeleteUser(int id)
         {
             var result = await _userService.DeleteUserAsync(id);
-            if (result == false)
+            if (!result)
             {
                 return NotFound();
             }
             return NoContent();
         }
+
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginUserDto loginUserDto)
         {
