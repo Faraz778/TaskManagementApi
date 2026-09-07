@@ -61,6 +61,18 @@ namespace TaskManagementApi.Controllers
             }
             return NoContent();
         }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginUserDto loginUserDto)
+        {
+            var result = await _userService.LoginUserAsync(loginUserDto);
+
+            if (result == null)
+            {
+                return Unauthorized("Invalid email or password.");
+            }
+
+            return Ok(result);
+        }
 
     }
 }

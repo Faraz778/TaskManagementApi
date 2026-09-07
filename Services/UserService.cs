@@ -3,25 +3,34 @@ using Microsoft.EntityFrameworkCore;
 using TaskManagementApi.Data;
 using TaskManagementApi.DTOs;
 using TaskManagementApi.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace TaskManagementApi.Services
 {
     public class UserService : IUserService
     {
         private readonly AppDbContext _context;
-        public UserService(AppDbContext context)
+        private readonly IConfiguration _configuration;
+        public UserService(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         public async Task<UserResponseDto> CreateUserAsync(CreateUserDto createUserDto)
         {
+            var passwordHasher = new PasswordHasher<User>();
             var user = new User
             {
                 UserName = createUserDto.UserName,
                 UserEmail = createUserDto.UserEmail,
-                UserPassword = createUserDto.UserPassword
+               
             };
+            user.UserPassword = passwordHasher.HashPassword(user, createUserDto.UserPassword);
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
             return new UserResponseDto
@@ -89,5 +98,61 @@ namespace TaskManagementApi.Services
         }
 
 
+        public async Task<LoginResponseDto?> LoginUserAsync(LoginUserDto loginUserDto)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserEmail == loginUserDto.UserEmail);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            var passwordHasher = new PasswordHasher<User>();
+
+            var result = passwordHasher.VerifyHashedPassword(
+                user,
+                user.UserPassword,
+                loginUserDto.UserPassword
+            );
+
+            if (result == PasswordVerificationResult.Failed)
+            {
+                return null;
+            }
+            var claims = new[]
+{
+    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+    new Claim(ClaimTypes.Email, user.UserEmail)
+};
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!)
+            );
+
+            var credentials = new SigningCredentials(
+                key,
+                SecurityAlgorithms.HmacSha256
+            );
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: credentials
+            );
+
+            return new LoginResponseDto
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(token)
+            };
+
+          
+        }
+    
+    
+    
+    
     }
 }

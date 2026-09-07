@@ -13,12 +13,14 @@ namespace TaskManagementApi.Services
             _appDbContext = appDbContext;
         }
 
-        public async Task<TaskResponseDto> CreateTaskAsync(CreateTaskDto createTaskDto)
+        public async Task<TaskResponseDto> CreateTaskAsync(CreateTaskDto createTaskDto, int userid)
         {
             var task = new TaskItem
             {
                 Title = createTaskDto.Title,
-                Description = createTaskDto.Description
+                Description = createTaskDto.Description,
+                UserId = userid,
+
             };
             await _appDbContext.Tasks.AddAsync(task);
             await _appDbContext.SaveChangesAsync();
@@ -33,9 +35,9 @@ namespace TaskManagementApi.Services
             };
         }
 
-        public async Task<IEnumerable<TaskResponseDto>> GetAllTasksAsync()
+        public async Task<IEnumerable<TaskResponseDto>> GetAllTasksAsync(int userId)
         {
-            var result = await _appDbContext.Tasks.Select(t => new TaskResponseDto
+            var result = await _appDbContext.Tasks.Where(t => t.UserId == userId).Select(t => new TaskResponseDto
             {
                 TaskId = t.TaskId,
                 Title = t.Title,
@@ -47,9 +49,9 @@ namespace TaskManagementApi.Services
             return result;
         }
 
-        public async Task<TaskResponseDto?> GetTaskAsync(int id)
+        public async Task<TaskResponseDto?> GetTaskAsync(int id, int userId)
         {
-            var result = await _appDbContext.Tasks.FindAsync(id);
+            var result = await _appDbContext.Tasks.FirstOrDefaultAsync(t => t.TaskId == id && t.UserId == userId);
             if (result == null)
             {
                 return null;

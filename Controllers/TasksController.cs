@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManagementApi.Services;
 //using TaskManagementApi.Models;
 using TaskManagementApi.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace TaskManagementApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class TasksController : ControllerBase
@@ -19,7 +22,8 @@ namespace TaskManagementApi.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTask(CreateTaskDto createTaskDto) {
 
-            var task = await _taskService.CreateTaskAsync(createTaskDto);
+            var userid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var task = await _taskService.CreateTaskAsync(createTaskDto, userid);
             return Created("", task);
 
         }
@@ -27,14 +31,16 @@ namespace TaskManagementApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllTasks()
         {
-            var result = await _taskService.GetAllTasksAsync();
+            var userid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _taskService.GetAllTasksAsync(userid);
             return Ok(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTask(int id)
         {
-            var result = await _taskService.GetTaskAsync(id);
+            var userid = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var result = await _taskService.GetTaskAsync(id, userid);
             if (result == null)
             {
                 return NotFound();
